@@ -1,19 +1,21 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, request, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import session, sessionmaker, declarative_base
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # from sqlalchemy import String, Integer, DateTime, Column, create_engine
 # from sqlalchemy.sql import func
 # import json
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
+DB_NAME = 'app.db'
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_NAME}"
 app.config['FLASK_ADMIN_SWATCH'] = 'sandstone'
 app.secret_key = 'viv'
-engine = create_engine('sqlite:///app.db')
+engine = create_engine(f'sqlite:///{DB_NAME}')
 db = SQLAlchemy(app)
 
 admin = Admin(app, name='Dashboard', template_mode='bootstrap3')
@@ -43,21 +45,43 @@ db.create_all()
 db.session.commit()
 admin.add_view(ModelView(users, db.session))
 
-# uriel = users(first_name='uriel', last_name='montes', username='umontes', email='uri.mon99@gmail.com', password='vivian123')
-# db.session.add(uriel)
-# db.session.commit()
-
 # Routes
 @app.route('/')
+def welcome():
+    return render_template('welcome.html')
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        user = users.query.filter_by(username=username).first()
+
+        if user:
+            if password == user.password:
+                return redirect('/home')
+            else:
+                return redirect('/register')
+
     return render_template('login.html')
 
 @app.route('/home')
-def welcome():
+def home():
     return render_template('home.html')
 
-@app.route('/register')
+@app.route('/register', methods=['GET', 'POST'])
 def create():
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        new_user = users(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
     return render_template('register.html')
 
 if __name__ == '__main__':
