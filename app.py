@@ -54,7 +54,7 @@ def load_user(id):
 #the welcome page for any user. users that are not logged in.
 @app.route('/') 
 def welcome():
-    return render_template('welcome.html')
+    return render_template('welcome.html', user=current_user)
 
 #login page for users to sign in or to be able to go to create account
 @app.route('/login', methods=['GET', 'POST']) 
@@ -76,7 +76,7 @@ def login():
             flash('User doesn\'t exist', category='error')
             return redirect(url_for('register'))
 
-    return render_template('login.html')
+    return render_template('login.html', user=current_user)
 
 #the home page for the users that have logged in
 @app.route('/home') 
@@ -116,7 +116,7 @@ def register():
             flash('You have been registered!', category='success')
             return redirect(url_for('login'))
 
-    return render_template('register.html')
+    return render_template('register.html', user=current_user)
 
 @app.route('/logout')
 @login_required
