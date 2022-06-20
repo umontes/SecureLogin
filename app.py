@@ -66,12 +66,15 @@ def login():
         user = users.query.filter_by(username=username).first()
 
         if user:
+            # checks that the saved password for the user is the same as the password given in the login page
             if check_password_hash(user.password, password):
                 login_user(user, remember=True)
                 flash('You are logged in!', category='success')
                 return redirect(url_for('home'))
+            # password doesn't match so it was entered incorrect
             else:
                 flash('Incorrect password', category='error')
+        # if the username isn't in the database then the user doesn't exist
         else:
             flash('User doesn\'t exist', category='error')
             return redirect(url_for('register'))
@@ -93,6 +96,7 @@ def register():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+        password2 = request.form.get('password2')
 
         user = users.query.filter_by(username=username).first()
 
@@ -108,6 +112,8 @@ def register():
             flash('email must be at least 10 characters.', category='error')
         elif len(password) < 6:
             flash('password must be at least 6 characters long.', category='error')
+        elif password != password2:
+            flash('the passwords don\'t match', category='error')
         else:
             new_user = users(first_name=first_name, last_name=last_name, username=username, email=email, password=generate_password_hash(password, method='sha256'))
             db.session.add(new_user)
