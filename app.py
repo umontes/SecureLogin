@@ -2,8 +2,6 @@ from flask import Flask, render_template, redirect, request, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import session, sessionmaker, declarative_base
-from flask_admin import Admin
-from flask_admin.contrib.sqla import ModelView
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, login_required, logout_user, current_user, LoginManager
 
@@ -14,8 +12,6 @@ app.config['FLASK_ADMIN_SWATCH'] = 'sandstone'
 app.secret_key = 'viv'
 engine = create_engine(f'sqlite:///{DB_NAME}')
 db = SQLAlchemy(app)
-
-admin = Admin(app, name='Dashboard', template_mode='bootstrap3')
 
 Base = declarative_base()
 Session = sessionmaker(app)
@@ -40,7 +36,6 @@ class users(db.Model, UserMixin):
 
 db.create_all()
 db.session.commit()
-admin.add_view(ModelView(users, db.session))
 
 # login manager stuff
 login_manager = LoginManager()
@@ -124,6 +119,7 @@ def register():
 
     return render_template('register.html', user=current_user)
 
+# route to logout of account
 @app.route('/logout')
 @login_required
 def logout():
@@ -131,4 +127,5 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run()
